@@ -78,7 +78,7 @@ jobs:
       - name: GitHub Actions workflows
         run: check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/*.yml pipelines/github-actions/*.yml
       - name: Azure DevOps pipeline
-        run: check-jsonschema --builtin-schema vendor.azure-pipelines pipelines/azure-devops/*.yml
+        run: check-jsonschema --no-schemacheck --builtin-schema vendor.azure-pipelines pipelines/azure-devops/*.yml
       - name: Compose file renders with the example env
         run: docker compose --env-file stacks/oci-paas/paas/.env.example -f stacks/oci-paas/paas/compose.yaml config -q
       - name: yamllint

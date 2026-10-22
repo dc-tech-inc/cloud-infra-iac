@@ -1,6 +1,8 @@
 ---
 galaxy_info:
   author: DC TECH INC
+  role_name: hardening
+  namespace: dctech
   description: Baseline Ubuntu hardening (sshd, fail2ban, unattended upgrades, sysctl)
   license: MIT
   min_ansible_version: "2.15"

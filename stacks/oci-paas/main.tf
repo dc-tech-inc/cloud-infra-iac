@@ -118,7 +118,9 @@ resource "oci_core_instance" "paas" {
     are_legacy_imds_endpoints_disabled = true
   }
 
-  is_pv_encryption_in_transit_enabled = true
+  launch_options {
+    is_pv_encryption_in_transit_enabled = true
+  }
 
   metadata = {
     ssh_authorized_keys = var.ssh_public_key

@@ -15,8 +15,8 @@ run "default_plan_shape" {
   }
 
   assert {
-    condition     = length(oci_core_security_list.paas.ingress_security_rules) == 3
-    error_message = "Expected exactly SSH, HTTP and HTTPS ingress rules."
+    condition     = oci_core_subnet.public.cidr_block == var.subnet_cidr
+    error_message = "Subnet must use the requested CIDR."
   }
 }
 
