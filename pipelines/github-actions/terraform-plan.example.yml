@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # required to request the OIDC token
+  id-token: write  # required to request the OIDC token
 
 jobs:
   plan:
@@ -24,7 +24,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::111122223333:role/example-plan-only # placeholder account
+          role-to-assume: arn:aws:iam::111122223333:role/example-plan-only  # placeholder account
           aws-region: us-east-1
 
       - name: Plan (never apply from a pull request)
