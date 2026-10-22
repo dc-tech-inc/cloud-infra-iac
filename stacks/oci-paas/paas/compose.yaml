@@ -1,0 +1,56 @@
+# PaaS-style app host: a Traefik edge router, a socket proxy (Traefik never touches the
+# Docker socket directly) and a sample app routed by labels. Run it on the VM from ../main.tf.
+name: paas-demo
+
+services:
+  socket-proxy:
+    image: tecnativa/docker-socket-proxy:0.3.0
+    environment:
+      CONTAINERS: "1"
+      POST: "0"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [internal]
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v3.1
+    command:
+      - --providers.docker.endpoint=tcp://socket-proxy:2375
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL:?set ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - letsencrypt:/letsencrypt
+    networks: [internal, edge]
+    depends_on: [socket-proxy]
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+  app:
+    image: traefik/whoami:v1.10.3
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.app.rule=Host(`${APP_DOMAIN:?set APP_DOMAIN}`)
+      - traefik.http.routers.app.entrypoints=websecure
+      - traefik.http.routers.app.tls.certresolver=le
+    networks: [edge]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    restart: unless-stopped
+
+networks:
+  internal:
+    internal: true
+  edge: {}
+
+volumes:
+  letsencrypt: {}
