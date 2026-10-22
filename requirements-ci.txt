@@ -1,6 +1,6 @@
 ansible-core>=2.17,<2.18
 ansible-lint>=24.9,<25
-molecule>=24.9,<25
+molecule>=26.10.0,<27
 molecule-plugins[docker]>=23.5,<24
 checkov>=3.2,<4
 check-jsonschema>=0.29,<1
