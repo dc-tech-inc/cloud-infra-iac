@@ -3,7 +3,7 @@
 ![ci](https://github.com/dc-tech-inc/cloud-infra-iac/actions/workflows/ci.yml/badge.svg)
 ![license](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Infrastructure-as-code reference by **DCtech.**: an Oracle Cloud (OCI) PaaS stack, small AWS / Azure / GCP / Cloudflare modules, an Ansible hardening role tested with Molecule, and CI pipelines for GitHub Actions and Azure DevOps.
+Infrastructure-as-code reference by DCtech.: an Oracle Cloud (OCI) PaaS stack, small AWS / Azure / GCP / Cloudflare modules, an Ansible hardening role tested with Molecule, and CI pipelines for GitHub Actions and Azure DevOps.
 
 > **Nothing in this repository has been applied to a real cloud account.** There are no cloud credentials, no real IP addresses and no real domains here (only `example.com` and RFC 5737 documentation ranges). Correctness is demonstrated by `terraform fmt`, `validate`, `terraform test` with mock providers, tflint, checkov, ansible-lint and Molecule, all running in CI. Treat the modules as reviewed reference code, not as battle-tested production infrastructure.
 
@@ -37,7 +37,7 @@ flowchart LR
   CI -. "never applies" .-> CLOUD[("Real cloud accounts")]
 ```
 
-The OCI stack, step by step:
+The OCI stack:
 
 ```mermaid
 flowchart TB
@@ -94,7 +94,7 @@ Resource arguments were written against the official docs of the pinned provider
 - Azure Pipelines YAML schema: <https://learn.microsoft.com/azure/devops/pipelines/yaml-schema/>
 - Docker Compose: <https://docs.docker.com/compose/>
 
-## Limitations (honest list)
+## Limitations
 
 - No `apply` has ever been run; real-account behaviour (quotas, image availability, IAM, billing) is untested.
 - Mock-provider tests only assert values derived from the configuration; computed values (IDs, IPs) are random mock data.

@@ -4,7 +4,7 @@ This repository contains reference infrastructure code only. It holds no credent
 
 ## Reporting a vulnerability
 
-Please use GitHub's private vulnerability reporting ("Security" tab, "Report a vulnerability") instead of a public issue. We aim to acknowledge reports within a few business days.
+Use GitHub's private vulnerability reporting ("Security" tab, "Report a vulnerability") instead of a public issue. We aim to acknowledge reports within a few business days.
 
 Useful reports include insecure defaults in the modules, a hardening step that weakens a host, or a CI workflow that could leak secrets.
 
