@@ -1,0 +1,22 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+# Secrets / local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Ansible / Molecule
+*.retry
+.molecule/
+# Python / editor
+__pycache__/
+.venv/
+.vscode/
+.idea/
