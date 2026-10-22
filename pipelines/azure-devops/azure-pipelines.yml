@@ -1,0 +1,58 @@
+# Azure DevOps pipeline: validate every Terraform root, no apply, no service connection.
+# Validated for schema correctness in GitHub Actions (check-jsonschema); it has not run on an Azure DevOps org.
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - stacks/*
+      - modules/*
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  terraformVersion: "1.9.8"
+
+stages:
+  - stage: Validate
+    displayName: Validate Terraform
+    jobs:
+      - job: terraform
+        displayName: fmt, validate, test
+        strategy:
+          matrix:
+            oci_paas:
+              root: stacks/oci-paas
+            aws:
+              root: modules/aws
+            azure:
+              root: modules/azure
+            gcp:
+              root: modules/gcp
+            cloudflare:
+              root: modules/cloudflare
+        steps:
+          - checkout: self
+
+          - script: |
+              set -euo pipefail
+              base="https://releases.hashicorp.com/terraform/$(terraformVersion)"
+              curl -fsSLo /tmp/tf.zip "${base}/terraform_$(terraformVersion)_linux_amd64.zip"
+              sudo unzip -o /tmp/tf.zip -d /usr/local/bin terraform
+              terraform version
+            displayName: Install Terraform
+
+          - script: |
+              set -euo pipefail
+              terraform fmt -check -recursive "$(root)"
+              terraform -chdir="$(root)" init -backend=false -input=false
+              terraform -chdir="$(root)" validate
+              terraform -chdir="$(root)" test
+            displayName: Format, validate and test $(root)

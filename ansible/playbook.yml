@@ -1,0 +1,6 @@
+---
+- name: Apply the baseline hardening role
+  hosts: paas
+  become: true
+  roles:
+    - role: hardening

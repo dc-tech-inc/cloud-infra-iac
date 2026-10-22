@@ -1,0 +1,11 @@
+---
+driver:
+  name: docker
+platforms:
+  - name: ubuntu-jammy
+    image: geerlingguy/docker-ubuntu2204-ansible:latest
+    pre_build_image: true
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

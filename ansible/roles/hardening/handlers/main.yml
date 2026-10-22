@@ -1,0 +1,18 @@
+---
+# Handlers are skipped inside containers (Molecule), where there is no init system or writable sysctl.
+- name: Reload sshd
+  ansible.builtin.service:
+    name: ssh
+    state: reloaded
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'podman']
+
+- name: Restart fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: restarted
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'podman']
+
+- name: Apply sysctl
+  ansible.builtin.command: sysctl --system
+  changed_when: true
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'podman']

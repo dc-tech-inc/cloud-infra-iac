@@ -1,0 +1,121 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  terraform:
+    name: terraform (${{ matrix.root }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        root: [stacks/oci-paas, modules/aws, modules/azure, modules/gcp, modules/cloudflare]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Cache providers
+        uses: actions/cache@v4
+        with:
+          path: ~/.terraform.d/plugin-cache
+          key: tf-providers-${{ matrix.root }}-${{ hashFiles(format('{0}/versions.tf', matrix.root)) }}
+      - name: fmt
+        run: terraform fmt -check -recursive ${{ matrix.root }}
+      - name: init
+        run: |
+          export TF_PLUGIN_CACHE_DIR="$HOME/.terraform.d/plugin-cache"
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          terraform -chdir=${{ matrix.root }} init -backend=false -input=false
+      - name: validate
+        run: terraform -chdir=${{ matrix.root }} validate
+      - name: test (mock providers)
+        run: terraform -chdir=${{ matrix.root }} test
+
+  tflint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.53.0
+      - run: tflint --recursive --config "$GITHUB_WORKSPACE/.tflint.hcl"
+
+  checkov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: pip install -r requirements-ci.txt
+      - run: checkov --config-file .checkov.yaml
+
+  pipelines:
+    name: pipeline YAML schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: pip install -r requirements-ci.txt
+      - name: GitHub Actions workflows
+        run: check-jsonschema --builtin-schema vendor.github-workflows .github/workflows/*.yml pipelines/github-actions/*.yml
+      - name: Azure DevOps pipeline
+        run: python scripts/validate-azure-pipeline.py pipelines/azure-devops/*.yml
+      - name: Compose file renders with the example env
+        run: docker compose --env-file stacks/oci-paas/paas/.env.example -f stacks/oci-paas/paas/compose.yaml config -q
+      - name: yamllint
+        run: yamllint ansible pipelines stacks/oci-paas/paas .github
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck scripts/*.sh
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks (pinned version, sha256 verified)
+        run: scripts/install-gitleaks.sh .bin
+      - name: Scan full git history
+        run: .bin/gitleaks detect --source . --no-banner --redact
+
+  ansible:
+    # Heavy job: pull requests and manual runs only, to save private-repo Actions minutes.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
+      - run: pip install -r requirements-ci.txt
+      - name: ansible-lint
+        working-directory: ansible
+        run: ansible-lint
+      - name: Molecule (docker driver)
+        working-directory: ansible/roles/hardening
+        run: molecule test
