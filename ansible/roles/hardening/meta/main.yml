@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: DC TECH INC
+  author: DCtech.
   role_name: hardening
   namespace: dctech
   description: Baseline Ubuntu hardening (sshd, fail2ban, unattended upgrades, sysctl)
