@@ -43,7 +43,8 @@ stages:
 
           - script: |
               set -euo pipefail
-              curl -fsSLo /tmp/tf.zip                 "https://releases.hashicorp.com/terraform/$(terraformVersion)/terraform_$(terraformVersion)_linux_amd64.zip"
+              base="https://releases.hashicorp.com/terraform/$(terraformVersion)"
+              curl -fsSLo /tmp/tf.zip "${base}/terraform_$(terraformVersion)_linux_amd64.zip"
               sudo unzip -o /tmp/tf.zip -d /usr/local/bin terraform
               terraform version
             displayName: Install Terraform
