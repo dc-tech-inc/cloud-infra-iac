@@ -1,0 +1,34 @@
+# Example consumer workflow (not active in this repo; copy it to .github/workflows/ in a real project).
+# Shows a plan-only job that authenticates to AWS with short-lived OIDC credentials instead of stored keys.
+# It is schema-validated in CI but has never run against a real account.
+name: terraform-plan-example
+
+on:
+  pull_request:
+    paths:
+      - modules/aws/**
+
+permissions:
+  contents: read
+  id-token: write # required to request the OIDC token
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::111122223333:role/example-plan-only # placeholder account
+          aws-region: us-east-1
+
+      - name: Plan (never apply from a pull request)
+        working-directory: modules/aws
+        run: |
+          terraform init -input=false
+          terraform plan -input=false -lock=false

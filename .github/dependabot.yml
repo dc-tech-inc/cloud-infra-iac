@@ -1,0 +1,23 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: terraform
+    directories:
+      - /stacks/oci-paas
+      - /modules/aws
+      - /modules/azure
+      - /modules/gcp
+      - /modules/cloudflare
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker-compose
+    directory: /stacks/oci-paas/paas
+    schedule:
+      interval: weekly

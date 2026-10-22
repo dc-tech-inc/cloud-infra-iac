@@ -1,0 +1,10 @@
+framework:
+  - terraform
+directory:
+  - stacks
+  - modules
+quiet: true
+compact: true
+# Skips are added only for findings that CI actually reports, each with a reason.
+# See docs/security-baseline.md ("Accepted checkov findings").
+skip-check: []
